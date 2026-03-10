@@ -4,6 +4,7 @@ width: 80%;
 margin:0 auto;
 background-color: rgb(255, 255, 255);
 padding: 20px;
+height: 5000px;
     }
     
 .merriweather-uniquifier {
@@ -14,7 +15,7 @@ padding: 20px;
   font-variation-settings:
     "wdth" 100;
 }
-    ul{background-color: rgb(65, 170, 219);color: rgb(255, 0, 0);padding: 20px;
+    ul{background-color: rgb(34, 180, 234);color: rgb(255, 0, 0);padding: 30px;
     }
  .crimson{
     color: crimson;
@@ -26,6 +27,37 @@ padding: 20px;
     .main-content {
  width: 70%;
  float: left;
-padding: 10px;
-background-color: crimson;
+padding: 20px;
+border: 10px solid rgb(34, 180, 234);
+margin: 20px solid rgb(34, 180, 234);
+background-color: rgb(149, 221, 240);
+
     }
+
+.indir.png{
+  
+}
+.highlight{
+  font-size: 40px;
+}
+.big{
+  font-size: 30px;
+}
+.orta{
+  position:relative;
+  top: 20px;
+  left: 300px;
+}
+
+.abs{
+  position:absolute;
+  top: 200px;
+  left: 300px;
+}
+.fixed{
+  position: fixed;
+
+}
+.BLUE{
+  color:so  rgb(34, 180, 234);;
+}
