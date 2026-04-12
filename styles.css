@@ -2,11 +2,12 @@
     body{
 width: 80%;        
 margin:0 auto;
-background-color: rgb(255, 255, 255);
+background-color: rgb(58, 100, 36);
 padding: 20px;
 height: 5000px;
-    }
+}
     
+        
 .merriweather-uniquifier {
   font-family: "Merriweather", serif;
   font-optical-sizing: auto;
@@ -15,15 +16,12 @@ height: 5000px;
   font-variation-settings:
     "wdth" 100;
 }
-    ul{background-color: rgb(34, 180, 234);color: rgb(255, 0, 0);padding: 30px;
-    }
+
+
  .crimson{
     color: crimson;
  }
- 
-  .white{
-    color: white;
-  }
+
     .main-content {
  width: 70%;
  float: left;
@@ -34,9 +32,7 @@ background-color: rgb(149, 221, 240);
 
     }
 
-.indir.png{
-  
-}
+
 .highlight{
   font-size: 40px;
 }
@@ -45,8 +41,20 @@ background-color: rgb(149, 221, 240);
 }
 .orta{
   position:relative;
-  top: 20px;
+  top: 0px;
   left: 300px;
+}
+
+.sag{
+  position: relative;
+  top: 0px;
+  left: 600px;
+}
+
+.sagg{
+  position: relative;
+  top: 0px;
+  left: 800px;
 }
 
 .abs{
@@ -58,6 +66,27 @@ background-color: rgb(149, 221, 240);
   position: fixed;
 
 }
+
 .BLUE{
-  color:so  rgb(34, 180, 234);;
+  color:  rgb(34, 180, 234);;
+}
+
+
+.BEYAZ{
+ color: antiquewhite;
+}
+
+.bgc{
+  background-color: antiquewhite;
+}
+
+.kapsayici{ display: flex; align-items: flex-start; gap: 20px;
+}
+
+.video-alani{
+  width: 80%; 
+}
+
+.yazi-alani{
+ width: 50%; font-family: Arial, sans-serif;
 }
