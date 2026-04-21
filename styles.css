@@ -46,10 +46,10 @@ nav a:hover::after {
     width: 100%;
 }
 
-/* HERO */
+
 .hero {
     background: linear-gradient(rgba(255, 255, 255, 0.66), rgba(0, 0, 0, 0.485)), 
-    url('foto/ARKAP.png');
+    url('ARKAP.png');
     height: 100vh;
     display: flex;
     align-items: center;
@@ -102,12 +102,6 @@ nav a:hover::after {
 
 
 
-
-
-
-
-
-
 .project {
     position: relative;
     overflow: hidden;
@@ -145,7 +139,7 @@ nav a:hover::after {
     transform: translateY(0);
 }
 
-/* ABOUT */
+
 .about {
     padding: 100px 20%;
     text-align: center;
