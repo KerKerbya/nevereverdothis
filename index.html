@@ -7,6 +7,424 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;1,200;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="fav.icon.png">
+ <style>
+
+    
+    /* ── DEĞIŞKENLER ─────────────────────────── */
+    :root {
+      --bg:     #404040db;
+      --gold:   #ff0000;
+      --white:  #fbff00;
+      --dim:    rgb(255, 166, 0);
+      --grid:   rgba(123, 0, 0, 0.059);
+      --border: rgb(182, 124, 0);
+    }
+
+    /* ── RESET ───────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; cursor:none !important; }
+
+    /* ── BODY ────────────────────────────────── */
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Space Mono', monospace;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    /* ── CAD CROSSHAIR — TAM EKRAN ÇİZGİLER ─── */
+    #cad-h {
+      position: fixed;
+      left: 0; top: 0;
+      width: 100vw; height: 1px;
+      background: rgba(255, 255, 255, 0.482);
+      pointer-events: none;
+      z-index: 9997;
+      will-change: transform;
+      transition: background 0.15s ease;
+    }
+    #cad-v {
+      position: fixed;
+      left: 0; top: 0;
+      width: 1px; height: 100vh;
+      background: rgba(255, 255, 255, 0.38);
+      pointer-events: none;
+      z-index: 9997;
+      will-change: transform;
+      transition: background 0.15s ease;
+    }
+    #cad-h.hover, #cad-v.hover {
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    /* ── CAD MERKEZ KARE ─────────────────────── */
+    #cursor {
+      position: fixed;
+      left: 0; top: 0;
+      width: 0; height: 0;
+      pointer-events: none;
+      z-index: 9999;
+      will-change: transform;
+    }
+    #cursor .cad-sq {
+      position: absolute;
+      width: 9px; height: 9px;
+      border: 1px solid rgba(255, 136, 0, 0.795);
+      transform: translate(-50%, -50%);
+      transition: width 0.13s ease, height 0.13s ease,
+                  border-color 0.13s ease;
+    }
+    #cursor.hover .cad-sq {
+      width: 16px; height: 16px;
+      border-color: rgb(221, 59, 59);
+    }
+
+    /* ── arkadaki kareler ──────────────────────── */
+    #grid-bg {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── TARAMA ÇİZGİSİ ──────────────────────── */
+    #scanline {
+      position: fixed;
+      top: -2px; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(235, 234, 234, 0.07), transparent);
+      animation: scan 14s linear infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+    @keyframes scan { 0%{ top:-2px } 100%{ top:100vh } }
+
+    /* ── KÖŞELEKLERİ ─────────────────────────── */
+    .corner {
+      position: fixed;
+      width: 34px; height: 34px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .corner::before,.corner::after {
+      content:'';
+      position:absolute;
+      background: rgba(57, 0, 0, 0.421);
+    }
+    .corner::before { top:0; left:0; width:100%; height:1px; }
+    .corner::after  { top:0; left:0; width:1px;  height:100%; }
+
+    #c-tl { top:22px; left:22px; }
+    #c-tr { top:22px; right:22px;  transform:scaleX(-1); }
+    #c-bl { bottom:22px; left:22px;  transform:scaleY(-1); }
+    #c-br { bottom:22px; right:22px; transform:scale(-1,-1); }
+
+    /* ── KOORDİNAT HUD ───────────────────────── */
+    #coords {
+      position: fixed;
+      top: 18px; right: 68px;
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      color: rgba(255, 255, 255, 0.727);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* ── SAYFA NUMARASI ──────────────────────── */
+    #page-counter {
+      position: fixed;
+      bottom: 22px; right: 22px;
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: rgba(196,163,90,0.2);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* ── HERO BAŞLIK ─────────────────────────── */
+    #hero {
+      position: fixed;
+      top:50%; left:50%;
+      transform: translate(-50%,-50%);
+      text-align: center;
+      pointer-events: none;
+      z-index: 2;
+      user-select: none;
+    }
+    #hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 200;
+      font-size: clamp(3.8rem, 10vw, 9rem);
+      letter-spacing: 0.28em;
+      color: rgba(0, 0, 0, 0.474);
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    #hero .tagline {
+      font-size: 8.5px;
+      letter-spacing: 0.55em;
+      color: rgba(255, 255, 255, 0.448);
+      text-transform: uppercase;
+      margin-top: 14px;
+    }
+
+    /* ── TALİMAT ─────────────────────────────── */
+    #instruction {
+      position: fixed;
+      bottom: 34px; left:50%;
+      transform: translateX(-60%);
+      font-size: 8.5px;
+      letter-spacing: 0.45em;
+      color: rgba(255, 255, 255, 0.505);
+      text-transform: uppercase;
+      z-index: 3;
+      pointer-events: none;
+      animation: breathe 2s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%,100%{ opacity:.35 }
+      50%    { opacity:1 }
+    }
+
+    /* ── UÇAN TUŞLAR ─────────────────────────── */
+    .nav-btn {
+      position: fixed;
+      z-index: 10;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: rgba(211, 208, 228, 0.65);
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; /* BOYUT BÜYÜTÜLDÜ */
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      padding: 16px 36px; /* İÇ BOŞLUK BÜYÜTÜLDÜ */
+      cursor: none;
+      white-space: nowrap;
+      user-select: none;
+      transition: border-color 0.4s, color 0.4s, background 0.4s;
+    }
+    .nav-btn::before {
+      content: attr(data-num);
+      position: absolute;
+      top: -1px; left: -1px;
+      font-size: 9.5px; /* NUMARA BOYUTU BÜYÜTÜLDÜ */
+      color: var(--gold);
+      opacity: 0;
+      padding: 3px 6px;
+      background: var(--bg);
+      transition: opacity 0.35s;
+    }
+    .nav-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(104, 108, 112, 0.726);
+    }
+    .nav-btn:hover::before { opacity: 0.7; }
+    /* Sadece Projeler butonunun kenarlık ve yazı rengini değiştirir */
+#btn-projects:hover {
+  border-color: #333333; /* Grimsi siyah kenarlık */
+  color: #333333;        /* Grimsi siyah yazı */
+}
+
+/* Numaranın da rengini uyumlu hale getirelim */
+#btn-projects:hover::before {
+  color: #333333; 
+  
+}
+
+    /* ── PANEL OVERLAY ───────────────────────── */
+    .panel {
+      position: fixed; inset:0;
+      z-index: 100;
+      background: rgba(7, 7, 7, 0.601);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.55s ease;
+    }
+    .panel.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .panel-inner {
+      width: min(820px, 90vw);
+      padding: 60px;
+      border: 1px solid rgba(196,163,90,0.14);
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.55s ease;
+    }
+    .panel.open .panel-inner { transform: translateY(0); }
+
+    /* köşe aksan çizgileri */
+    .panel-inner::before {
+      content:'';
+      position:absolute;
+      top:-1px; left:-1px;
+      width:28px; height:28px;
+      border-top: 1px solid var(--white);
+      border-left: 1px solid var(--gold);
+    }
+    .panel-inner::after {
+      content:'';
+      position:absolute;
+      bottom:-1px; right:-1px;
+      width:28px; height:28px;
+      border-bottom: 1px solid var(--white);
+      border-right: 1px solid var(--gold);
+    }
+
+    .panel-num {
+      font-size: 9px;
+      letter-spacing: 0.42em;
+      color: var(--dim);
+      opacity: 0.55;
+      margin-bottom: 10px;
+    }
+    .panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 200;
+      font-style: italic;
+      font-size: clamp(2.1rem,5vw,4.2rem);
+      letter-spacing: 0.04em;
+      color: var(--white);
+      line-height: 1.12;
+      margin-bottom: 28px;
+    }
+    .panel-title em { color: var(--gold); font-style:italic; }
+
+    .panel-body {
+      font-size: 10.5px;
+      line-height: 2.5;
+      color: var(--dim);
+      letter-spacing: 0.06em;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 22px; right: 22px;
+      background: none; border: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 8.5px;
+      letter-spacing: 0.3em;
+      color: rgba(255, 0, 0, 0.778);
+      cursor: none;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .close-btn:hover { color: var(--gold); }
+
+    .divider {
+      width: 38px; height: 1px;
+      background: rgba(196,163,90,0.28);
+      margin: 22px 0;
+    }
+
+    /* ── PROJELER ────────────────────────────── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 4px;
+    }
+    .project-card {
+      border: 1px solid rgba(196,163,90,0.1);
+      padding: 20px;
+      position: relative;
+      transition: border-color 0.3s;
+    }
+    .project-card:hover { border-color: rgba(196,163,90,0.38); }
+    .project-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 1.28rem;
+      margin-bottom: 7px;
+      color: var(--white);
+    }
+    .project-card p {
+      font-size: 8.5px;
+      letter-spacing: 0.22em;
+      color: var(--dim);
+    }
+    .project-year {
+      position: absolute;
+      top: 20px; right: 20px;
+      font-size: 8.5px;
+      letter-spacing: 0.2em;
+      color: rgba(196,163,90,0.35);
+    }
+
+    /* ── BECERİLER ───────────────────────────── */
+    .skill-row {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-bottom: 18px;
+    }
+    .skill-label {
+      font-size: 8.5px;
+      letter-spacing: 0.25em;
+      color: var(--white);
+      width: 90px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .skill-track {
+      flex:1;
+      height: 1px;
+      background: rgba(255,255,255,0.035);
+      position: relative;
+    }
+    .skill-fill {
+      position: absolute;
+      top:0; left:0; height:1px;
+      background: var(--gold);
+      width: 0%;
+      transition: width 1.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    .panel.open .skill-fill { width: var(--w); }
+    .skill-pct {
+      font-size: 8.5px;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.4);
+      width: 34px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── İLETİŞİM ────────────────────────────── */
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      padding: 17px 0;
+      border-bottom: 1px solid rgba(196,163,90,0.07);
+      text-decoration: none;
+      color: var(--dim);
+      font-size: 9.5px;
+      letter-spacing: 0.22em;
+      transition: color 0.3s;
+      cursor: none;
+    }
+    .contact-item:hover { color: var(--gold); }
+    .c-icon {
+      font-size: 9.5px;
+      color: var(--border);
+      opacity: 0.45;
+      width: 18px;
+    }
+    
+
+
+
+ </style>
 
 </head>
 <body>
@@ -116,6 +534,185 @@
       </a>
     </div>
   </div>
+ <script>
+    
+
+    // ── CAD İMLEÇ ───────────────────────────────
+    const cursor  = document.getElementById('cursor');
+    const cadH    = document.getElementById('cad-h');
+    const cadV    = document.getElementById('cad-v');
+    const coordsEl = document.getElementById('coords');
+
+    document.addEventListener('mousemove', e => {
+      const x = e.clientX, y = e.clientY;
+      cursor.style.transform = `translate(${x}px,${y}px)`;
+      cadH.style.transform   = `translateY(${y}px)`;
+      cadV.style.transform   = `translateX(${x}px)`;
+      const px = String(Math.round(x)).padStart(3,'0');
+      const py = String(Math.round(y)).padStart(3,'0');
+      coordsEl.textContent = `X: ${px} — Y: ${py}`;
+    });
+
+    // Hover — kare büyür, çizgiler parlaklaşır
+    document.querySelectorAll('.nav-btn, .close-btn, .contact-item, .project-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.classList.add('hover');
+        cadH.classList.add('hover');
+        cadV.classList.add('hover');
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.classList.remove('hover');
+        cadH.classList.remove('hover');
+        cadV.classList.remove('hover');
+      });
+    });
+
+    // ── UÇAN TUŞLAR — FİZİK ─────────────────────
+    const buttons = Array.from(document.querySelectorAll('.nav-btn'));
+    const states  = [];
+
+    function initButtons() {
+      buttons.forEach((btn, i) => {
+        const bw = btn.offsetWidth  + 2;
+        const bh = btn.offsetHeight + 2;
+        const margin = 60;
+
+        // Hızlar çok ama çok az arttırıldı
+        const speeds = [0.55, 0.70, 0.62, 0.66];
+        const speed  = speeds[i] + Math.random() * 0.15;
+
+        const angle = Math.random() * Math.PI * 2;
+
+        const s = {
+          x:  margin + Math.random() * (window.innerWidth  - bw - margin * 2),
+          y:  margin + Math.random() * (window.innerHeight - bh - margin * 2),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          baseSpeed: speed, // Eski hızını hafızaya aldık
+          hover: false,
+          w: bw,
+          h: bh
+        };
+
+        states.push(s);
+        btn.style.left = s.x + 'px';
+        btn.style.top  = s.y + 'px';
+
+        btn.addEventListener('mouseenter', () => { s.hover = true;  });
+        btn.addEventListener('mouseleave', () => { s.hover = false; });
+        btn.addEventListener('click', () => {
+          if (btn.dataset.panel === 'projects') {
+            window.location.href = 'projects.html';
+          } else {
+            openPanel(btn.dataset.panel);
+          }
+        });
+      });
+    }
+
+    function animateButtons() {
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+
+      states.forEach((s, i) => {
+        const btn = buttons[i];
+        
+        if (s.hover) {
+          // Duraksama — fare üzerindeyken yavaşla
+          s.vx *= 0.90;
+          s.vy *= 0.90;
+        } else {
+          // Eğer hover değilse, mevcut hızına bak
+          const currentSpeed = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+          
+          // Eğer olması gereken hızdan yavaşsa yavaşça hızlandır
+          if (currentSpeed < s.baseSpeed) {
+            // Eğer hız sıfıra indiyse ufak bir rastgele itme ver ki sıfırda takılmasın
+            if (currentSpeed < 0.01) {
+              const a = Math.random() * Math.PI * 2;
+              s.vx = Math.cos(a) * 0.1;
+              s.vy = Math.sin(a) * 0.1;
+            } else {
+              // Yavaşça ivmelenerek eski hızına ulaş
+              s.vx *= 1.03; 
+              s.vy *= 1.03;
+            }
+          }
+        }
+
+        s.x += s.vx;
+        s.y += s.vy;
+
+        // Kenarlardan sekme
+        if (s.x <= 0)       { s.x = 0;       s.vx =  Math.abs(s.vx); }
+        if (s.x >= W - s.w) { s.x = W - s.w; s.vx = -Math.abs(s.vx); }
+        if (s.y <= 0)       { s.y = 0;       s.vy =  Math.abs(s.vy); }
+        if (s.y >= H - s.h) { s.y = H - s.h; s.vy = -Math.abs(s.vy); }
+
+        btn.style.left = s.x + 'px';
+        btn.style.top  = s.y + 'px';
+      });
+
+      requestAnimationFrame(animateButtons);
+    }
+
+    window.addEventListener('load', () => {
+      initButtons();
+      animateButtons();
+    });
+
+    window.addEventListener('resize', () => {
+      states.forEach((s, i) => {
+        s.w = buttons[i].offsetWidth  + 2;
+        s.h = buttons[i].offsetHeight + 2;
+        s.x = Math.min(s.x, window.innerWidth  - s.w);
+        s.y = Math.min(s.y, window.innerHeight - s.h);
+      });
+    });
+
+    // ── PANEL AÇMA / KAPAMA ──────────────────────
+    function openPanel(id) {
+      const panel = document.getElementById('panel-' + id);
+      if (!panel) return;
+      panel.classList.add('open');
+    }
+
+    function closePanel(id) {
+      const panel = document.getElementById('panel-' + id);
+      if (!panel) return;
+      panel.classList.remove('open');
+    }
+
+    // Kapat tuşları
+    document.querySelectorAll('.close-btn').forEach(btn => {
+      btn.addEventListener('click', () => closePanel(btn.dataset.close));
+    });
+
+    // Panel dışına tıklama — kapat
+    document.querySelectorAll('.panel').forEach(panel => {
+      panel.addEventListener('click', e => {
+        if (e.target === panel) {
+          closePanel(panel.id.replace('panel-', ''));
+        }
+      });
+    });
+
+    // ESC tuşu
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.panel.open').forEach(p => {
+          closePanel(p.id.replace('panel-', ''));
+        });
+      }
+    });
+
+
+
+
+
+
+
+ </script>
+
 </body>
 </html>
-
